@@ -1,0 +1,19 @@
+# This file is machine-generated - editing it directly is not advised
+
+[[CSTParser]]
+deps = ["Tokenize"]
+git-tree-sha1 = "980055cab361b4bb77a3a158cec60375d0292a1a"
+uuid = "00ebfdb7-1f24-5e51-bd34-a7502290713f"
+version = "3.2.2"
+
+[[Random]]
+deps = ["Serialization"]
+uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+
+[[Serialization]]
+uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+
+[[Tokenize]]
+git-tree-sha1 = "15318136d8b7a91a0e49916ec931cc51d5456ab2"
+uuid = "0796e94c-ce3b-5d07-9a54-7f471281c624"
+version = "0.5.16"

@@ -5,19 +5,6 @@ using CSTParser
 export emojify, emojify_string
 
 const emoji = Char.(0x1F400:0x1F6A6)
-@enum Status funcdecl funcdef funcname funcargs funcbody ass mod other
-
-function get_status(e::CSTParser.EXPR)
-    if CSTParser.headof(e) === :function
-        return funcdecl
-    elseif CSTParser.isassignment(e)
-        return ass
-    elseif CSTParser.defines_module(e)
-        return mod
-    else
-        return other
-    end
-end
 
 function _emojify_string(str::AbstractString, out::IO)
     emojis = shuffle(emoji)
@@ -27,61 +14,69 @@ function _emojify_string(str::AbstractString, out::IO)
     cu = codeunits(str)
 
     offset = 1
-    stack = Vector{Tuple{CSTParser.EXPR,Status}}()
-    replacements = Dict{String,Char}()
+    stack = Vector{CSTParser.EXPR}()
+    replacements = Dict{String, Char}()
 
-    push!(stack, (cst, get_status(cst)))
+    function replace(key::AbstractString)
+        if !haskey(replacements, key)
+            replacements[key] = emojis[emojiidx]
+            emojiidx += 1
+        end
+    end
+
+    function replace(key::CSTParser.EXPR)
+        name = CSTParser.valof(CSTParser.get_name(key))
+        if !isnothing(name)
+            replace(name)
+        end
+    end
+
+    push!(stack, cst)
     while length(stack) > 0
-        cst, status = pop!(stack)
+        cst = pop!(stack)
         if isnothing(cst.args)
-            if CSTParser.isidentifier(cst)
-                if status != other
-                    cem = emojis[emojiidx]
-                    emojiidx += 1
-                    replacements[CSTParser.valof(cst)] = cem
-                elseif haskey(replacements, CSTParser.valof(cst))
-                    cem = replacements[CSTParser.valof(cst)]
-                else
-                    cem = CSTParser.valof(cst)
-                    #@warn "no replacement for identifier $cem at offset $offset"
-                end
+            if CSTParser.isidentifier(cst) && haskey(replacements, CSTParser.valof(cst))
+                cem = replacements[CSTParser.valof(cst)]
                 write(out, cem)
                 if cst.fullspan > cst.span
-                    write(out, cu[(offset+cst.span):(offset+cst.fullspan-1)])
+                    write(out, cu[(offset + cst.span):(offset + cst.fullspan - 1)])
                 end
             else
-                write(out, cu[offset:(offset+cst.fullspan-1)])
+                write(out, cu[offset:(offset + cst.fullspan - 1)])
             end
             offset += cst.fullspan
         else
-            if status == funcdecl
-                push!(stack, (cst[4], other))
-                push!(stack, (cst[3], funcbody))
-                push!(stack, (cst[2], funcdef))
-                push!(stack, (cst[1], funcdecl))
-            elseif status == funcdef
-                for i = lastindex(cst):-1:(firstindex(cst)+1)
-                    push!(stack, (cst[i], funcargs))
+            if CSTParser.defines_function(cst)
+                for sigpart in CSTParser.get_sig(cst)
+                    replace(CSTParser.get_arg_name(sigpart))
                 end
-                push!(stack, (cst[1], funcname))
-            elseif status == funcargs
-                for i = lastindex(cst):-1:(firstindex(cst)+1)
-                    push!(stack, (cst[i], other))
+            elseif CSTParser.isparameters(cst)
+                for param in cst
+                    replace(CSTParser.get_arg_name(param))
                 end
-                push!(stack, (cst[1], funcargs))
-            else
-                for i = lastindex(cst):-1:firstindex(cst)
-                    ccst = cst[i]
-                    cstatus = CSTParser.isidentifier(ccst) ? status : get_status(ccst)
-                    push!(stack, (ccst, cstatus))
+            elseif CSTParser.isassignment(cst)
+                replace(cst[1])
+            elseif CSTParser.defines_datatype(cst)
+                replace(cst)
+                for c in cst
+                    if CSTParser.headof(c) === :block # body of type definition
+                        for cb in c
+                            replace(cb)
+                        end
+                        break
+                    end
                 end
+            end
+
+            for i in lastindex(cst):-1:(firstindex(cst))
+                push!(stack, cst[i])
             end
         end
     end
 end
 
 function emojify_string(str::AbstractString)
-    out = IOBuffer(sizehint = sizeof(str))
+    out = IOBuffer(sizehint=sizeof(str))
     _emojify_string(str, out)
     return String(take!(out))
 end

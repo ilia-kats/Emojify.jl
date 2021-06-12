@@ -5,11 +5,11 @@ using CSTParser
 export emojify, emojify_string
 
 const emoji = Char.(0x1F400:0x1F6A6)
-@enum Status funcdef funcargs ass mod other
+@enum Status funcdecl funcdef funcname funcargs funcbody ass mod other
 
 function get_status(e::CSTParser.EXPR)
-    if CSTParser.defines_function(e)
-        return funcdef
+    if CSTParser.headof(e) === :function
+        return funcdecl
     elseif CSTParser.isassignment(e)
         return ass
     elseif CSTParser.defines_module(e)
@@ -23,29 +23,22 @@ function _emojify_string(str::AbstractString, out::IO)
     emojis = shuffle(emoji)
     emojiidx = 1
 
-    cst = CSTParser.parse(str)
+    cst = CSTParser.parse(str, true)
     cu = codeunits(str)
 
     offset = 1
-    stack = Vector{CSTParser.EXPR}()
+    stack = Vector{Tuple{CSTParser.EXPR,Status}}()
     replacements = Dict{String,Char}()
 
-    status = get_status(cst)
-    push!(stack, cst)
+    push!(stack, (cst, get_status(cst)))
     while length(stack) > 0
-        cst = pop!(stack)
+        cst, status = pop!(stack)
         if isnothing(cst.args)
             if CSTParser.isidentifier(cst)
                 if status != other
                     cem = emojis[emojiidx]
                     emojiidx += 1
                     replacements[CSTParser.valof(cst)] = cem
-
-                    if status == funcdef
-                        status = funcargs
-                    elseif status != funcargs
-                        status = other
-                    end
                 elseif haskey(replacements, CSTParser.valof(cst))
                     cem = replacements[CSTParser.valof(cst)]
                 else
@@ -61,11 +54,27 @@ function _emojify_string(str::AbstractString, out::IO)
             end
             offset += cst.fullspan
         else
-            if status == other || status == funcargs
-                status = get_status(cst)
-            end
-            for i = lastindex(cst):-1:firstindex(cst)
-                push!(stack, cst[i])
+            if status == funcdecl
+                push!(stack, (cst[4], other))
+                push!(stack, (cst[3], funcbody))
+                push!(stack, (cst[2], funcdef))
+                push!(stack, (cst[1], funcdecl))
+            elseif status == funcdef
+                for i = lastindex(cst):-1:(firstindex(cst)+1)
+                    push!(stack, (cst[i], funcargs))
+                end
+                push!(stack, (cst[1], funcname))
+            elseif status == funcargs
+                for i = lastindex(cst):-1:(firstindex(cst)+1)
+                    push!(stack, (cst[i], other))
+                end
+                push!(stack, (cst[1], funcargs))
+            else
+                for i = lastindex(cst):-1:firstindex(cst)
+                    ccst = cst[i]
+                    cstatus = CSTParser.isidentifier(ccst) ? status : get_status(ccst)
+                    push!(stack, (ccst, cstatus))
+                end
             end
         end
     end

@@ -8,19 +8,31 @@ const emoji = Char.(0x1F400:0x1F6A6)
 
 function _emojify_string(str::AbstractString, out::IO)
     emojis = shuffle(emoji)
-    emojiidx = 1
+    emojiidx = [1]
 
     cst = CSTParser.parse(str, true)
     cu = codeunits(str)
 
     offset = 1
     stack = Vector{CSTParser.EXPR}()
-    replacements = Dict{String, Char}()
+    replacements = Dict{String, String}()
 
     function replace(key::AbstractString)
         if !haskey(replacements, key)
-            replacements[key] = emojis[emojiidx]
-            emojiidx += 1
+            replacements[key] = String([emojis[i] for i in emojiidx])
+            cidx = length(emojiidx)
+            while cidx > 0
+                emojiidx[cidx] += 1
+                if emojiidx[cidx] > length(emojis)
+                    emojiidx[cidx] = 1
+                    cidx -= 1
+                else
+                    break
+                end
+            end
+            if cidx == 0
+                push!(emojiidx, 1)
+            end
         end
     end
 

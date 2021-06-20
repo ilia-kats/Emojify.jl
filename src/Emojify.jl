@@ -2,7 +2,7 @@ module Emojify
 using Random
 using CSTParser
 
-export emojify, emojify_string
+export emojify
 
 const emoji = Char.(0x1F400:0x1F6A6)
 
@@ -126,7 +126,7 @@ function _emojify_file(file::AbstractString, env::EmojiEnv)
     return outfile
 end
 
-function emojify_string(str::AbstractString)
+function emojify(str::AbstractString)
     out = IOBuffer(sizehint=sizeof(str))
     _emojify_string(str, out, EmojiEnv())
     return String(take!(out))

@@ -18,3 +18,5 @@ end
 
 Base.getproperty(x::TestStruct, name::Symbol) = getfield(x, name)
 Test.record(x) = x
+
+end # module

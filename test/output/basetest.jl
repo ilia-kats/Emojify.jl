@@ -18,3 +18,5 @@ end
 
 Base.getproperty(🕼::🗵, 🙂::Symbol) = getfield(🕼, 🙂)
 Test.record(🕼) = 🕼
+
+end # module

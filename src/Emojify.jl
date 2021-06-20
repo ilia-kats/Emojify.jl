@@ -10,12 +10,12 @@ mutable struct EmojiEnv
     emojis::Vector{Char}
     emojiidx::Vector{UInt}
     replacements::Dict{String, String}
-    basedir::String
+    basedir::Union{String, Nothing}
     outdir::Union{String, Nothing}
 end
 
-EmojiEnv(basedir::String, outdir::Union{String, Nothing}=nothing) = EmojiEnv(shuffle(emoji), [1], Dict{String, String}(), abspath(basedir), abspath(outdir))
-EmojiEnv(emojis::Vector{Char}, basedir::String, outdir::Union{String, Nothing}=nothing) = EmojiEnv(emojis, [1], Dict{String, String}(), abspath(basedir), abspath(outdir))
+EmojiEnv(basedir::String, outdir::String, emojis::Vector{Char}=emoji) = EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), abspath(basedir), abspath(outdir))
+EmojiEnv(emojis::Vector{Char}=emoji) = EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), nothing, nothing)
 
 function _replace(key::AbstractString, env::EmojiEnv)
     if !haskey(env.replacements, key)

@@ -62,7 +62,7 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
                 if cst.fullspan > cst.span
                     write(out, cu[(offset + cst.span):(offset + cst.fullspan - 1)])
                 end
-            elseif cst.fullspan > 0
+            elseif cst.span >= 0
                 write(out, cu[offset:(offset + cst.fullspan - 1)])
             elseif !isnothing(CSTParser.valof(cst))
                 write(out, CSTParser.valof(cst))
@@ -99,8 +99,8 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
                 end
                 newpath = _emojify_file(includefile, env)
                 if absp
-                    cst.args[2].val = newpath
-                    cst.args[2].fullspan = 0
+                    cst.args[2].val = "\"$newpath\""
+                    cst.args[2].span = -1
                 end
             end
 

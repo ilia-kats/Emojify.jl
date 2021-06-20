@@ -1,15 +1,20 @@
 module TestMod
+using Test
+
 🕼 = 1
 👴() = nothing
 
 include("test.jl")
 
-struct 💊
-    🔷::Int
-    🙂::Float
+struct 🗵
+    📹::Int
+    🗜::Float
 end
 
-struct 📱
-    🔷::💊
-    🙂::String
+struct 💊
+    📹::🗵
+    🗜::String
 end
+
+Base.getproperty(🕼::🗵, 🙂::Symbol) = getfield(🕼, 🙂)
+Test.record(🕼) = 🕼

@@ -9,9 +9,14 @@ const emoji = Char.(0x1F400:0x1F6A6)
 mutable struct EmojiEnv
     emojis::Vector{Char}
     emojiidx::Vector{UInt}
+    modules::Set{String}
     replacements::Dict{String, String}
     basedir::Union{String, Nothing}
     outdir::Union{String, Nothing}
+end
+function EmojiEnv(emojis::Vector{Char}, emojiidx::Vector{<:Integer}, replacements::Dict{String, String}, basedir::Union{String, Nothing}, outdir::Union{String, Nothing})
+    defaultmods = Set(["Base", "Core"])
+    EmojiEnv(emojis, emojiidx, defaultmods, replacements, basedir, outdir)
 end
 
 EmojiEnv(basedir::String, outdir::String, emojis::Vector{Char}=emoji) = EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), abspath(basedir), abspath(outdir))
@@ -37,9 +42,12 @@ function _replace(key::AbstractString, env::EmojiEnv)
 end
 
 function _replace(key::CSTParser.EXPR, env::EmojiEnv)
-    name = CSTParser.valof(CSTParser.get_name(key))
-    if !isnothing(name)
-        _replace(name, env)
+    name = CSTParser.get_name(key)
+    if CSTParser.isidentifier(name)
+        nval = CSTParser.valof(name)
+        if !isnothing(nval)
+            _replace(nval, env)
+        end
     end
 end
 
@@ -50,13 +58,13 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
     cu = codeunits(str)
 
     offset = 1
-    stack = Vector{CSTParser.EXPR}()
-    push!(stack, cst)
+    stack = Vector{Tuple{CSTParser.EXPR, Bool}}()
+    push!(stack, (cst, true))
 
     while length(stack) > 0
-        cst = pop!(stack)
+        cst, replace = pop!(stack)
         if isnothing(cst.args)
-            if CSTParser.isidentifier(cst) && haskey(env.replacements, CSTParser.valof(cst))
+            if replace && CSTParser.isidentifier(cst) && haskey(env.replacements, CSTParser.valof(cst))
                 cem = env.replacements[CSTParser.valof(cst)]
                 write(out, cem)
                 if cst.fullspan > cst.span
@@ -75,6 +83,8 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
                 for sigpart in CSTParser.get_sig(cst)
                     _replace(CSTParser.get_arg_name(sigpart), env)
                 end
+            elseif CSTParser.is_getfield(cst) && CSTParser.valof(CSTParser.unquotenode(cst)) in env.modules
+                    replace = false
             elseif CSTParser.isparameters(cst)
                 for param in cst
                     _replace(CSTParser.get_arg_name(param), env)
@@ -102,10 +112,18 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
                     cst.args[2].val = "\"$newpath\""
                     cst.args[2].span = -1
                 end
+            elseif CSTParser.headof(cst) === :using || CSTParser.headof(cst) === :import
+                for arg in cst.args
+                    for carg in arg.args
+                        if CSTParser.isidentifier(carg)
+                            push!(env.modules, CSTParser.valof(carg))
+                        end
+                    end
+                end
             end
 
-            for i in lastindex(cst):-1:(firstindex(cst))
-                push!(stack, cst[i])
+            for i in length(cst):-1:1
+                push!(stack, (cst[i], replace))
             end
         end
     end

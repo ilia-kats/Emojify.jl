@@ -6,6 +6,7 @@ The output is still valid Julia code.
 ## Emojify your code
 You can use either a string with Julia code as input, or a file path.
 If a file path is given, all files referenced with `include()` will also be emojified.
+If your code defines modules, module names, names of exported functions, and keyword arguments of exported functions will not be emojified.
 
 For example,
 ```julia
@@ -44,5 +45,5 @@ You can also pass a `Vector{Char}` as the last argument to use instead of the de
 emojify("path_to_input_file.jl", "path_to_output_directory", Char.(0x02107:0x0214A))
 ```
 
-## Emojifying base Julia functions
+## Emojifying calls base Julia functions
 To achieve absolute chaos, I recommend using this package together with [WatchJuliaBurn.jl](https://github.com/theogf/WatchJuliaBurn.jl).

@@ -4,14 +4,17 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    julia-version: '1'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        julia-version: ['1']
+        os: [ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
         with:
-          version: ${{ julia-version }}
+          version: ${{ matrix.julia-version }}
       - uses: actions/cache@v2
         env:
           cache-name: cache-artifacts

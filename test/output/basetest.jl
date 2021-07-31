@@ -1,22 +1,28 @@
 module TestMod
 using Test
 
+export testfun3
+
 🕼 = 1
 👴() = nothing
+🗍(🕼, 🖅; 📄, 🗫) = 🖅
+testfun3(🕼, 🖅; 📄, 🗫) = 🖅
 
 include("test.jl")
 
-struct 🗵
-    📹::Int
-    🗜::Float
+struct TestStruct
+    field1::Int
+    field2::Float
 end
 
-struct 💊
-    📹::🗵
-    🗜::String
+struct 🗜
+    💊::TestStruct
+    🔷::String
 end
 
-Base.getproperty(🕼::🗵, 🙂::Symbol) = getfield(🕼, 🙂)
+Base.getproperty(🕼::TestStruct, 📱::Symbol) = getfield(🕼, 📱)
 Test.record(🕼) = 🕼
+
+export TestStruct
 
 end # module

@@ -31,3 +31,11 @@ x₃ = 8 .* x₀;
 testfun(x₁, sind.(x₁), 45)
 testfun(x₂, sind.(x₂), 45)
 testfun(x₃, sind.(x₃), 45)
+
+function exporttest(x, y)
+    return y
+end
+
+testfun3(x::Int) = x
+
+export exporttest

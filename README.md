@@ -35,8 +35,13 @@ end
 
 To emojify a file, use
 ```julia
-using Emojify
 emojify("path_to_input_file.jl", "path_to_output_directory")
+```
+
+You can also pass a `Vector{Char}` as the last argument to use instead of the default emoji:
+```julia
+
+emojify("path_to_input_file.jl", "path_to_output_directory", Char.(0x02107:0x0214A))
 ```
 
 ## Emojifying base Julia functions

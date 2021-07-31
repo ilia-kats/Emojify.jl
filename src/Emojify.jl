@@ -25,10 +25,18 @@ function EmojiEnv(
     EmojiEnv(emojis, emojiidx, defaultmods, replacements, basedir, outdir)
 end
 
-EmojiEnv(basedir::String, outdir::String, emojis::Vector{Char}=emoji) =
+function EmojiEnv(basedir::String, outdir::String, emojis::Union{Vector{Char}, Nothing}=emoji)
+    if isnothing(emojis)
+        emojis=emoji
+    end
     EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), abspath(basedir), abspath(outdir))
-EmojiEnv(emojis::Vector{Char}=emoji) =
+end
+function EmojiEnv(emojis::Union{Vector{Char}, Nothing}=emoji)
+    if isnothing(emojis)
+        emojis=emoji
+    end
     EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), nothing, nothing)
+end
 
 function _replace(key::AbstractString, env::EmojiEnv)
     if !haskey(env.replacements, key)
@@ -223,14 +231,14 @@ function _emojify_file(file::AbstractString, env::EmojiEnv, exports::Set{String}
     return outfile
 end
 
-function emojify(str::AbstractString)
+function emojify(str::AbstractString, emojis::Union{Vector{Char}, Nothing}=nothing)
     out = IOBuffer(sizehint=sizeof(str))
-    _emojify_string(str, out, EmojiEnv())
+    _emojify_string(str, out, EmojiEnv(emojs))
     return String(take!(out))
 end
 
-function emojify(infile::AbstractString, outdir::AbstractString)
-    _emojify_file(abspath(infile), EmojiEnv(dirname(infile), outdir))
+function emojify(infile::AbstractString, outdir::AbstractString, emojis::Union{Vector{Char}, Nothing}=nothing)
+    _emojify_file(abspath(infile), EmojiEnv(dirname(infile), outdir, emojis))
     nothing
 end
 

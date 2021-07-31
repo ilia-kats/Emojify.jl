@@ -45,5 +45,5 @@ You can also pass a `Vector{Char}` as the last argument to use instead of the de
 emojify("path_to_input_file.jl", "path_to_output_directory", Char.(0x02107:0x0214A))
 ```
 
-## Emojifying calls base Julia functions
+## Emojifying calls to base Julia functions
 To achieve absolute chaos, I recommend using this package together with [WatchJuliaBurn.jl](https://github.com/theogf/WatchJuliaBurn.jl).

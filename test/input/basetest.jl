@@ -6,7 +6,10 @@ export testfun3
 x = 1
 testfun() = nothing
 testfun2(x, y; z, a) = y
-testfun3(x, y; z, a) = y
+function testfun3(x, y; z, a)
+    b = z + a
+    return b
+end
 
 include("test.jl")
 

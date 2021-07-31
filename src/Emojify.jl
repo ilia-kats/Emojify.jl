@@ -42,13 +42,18 @@ function _replace(key::AbstractString, env::EmojiEnv)
     end
 end
 
-function _replace(key::CSTParser.EXPR, env::EmojiEnv)
+function _get_string(key::CSTParser.EXPR)
     name = CSTParser.get_name(key)
     if CSTParser.isidentifier(name)
-        nval = CSTParser.valof(name)
-        if !isnothing(nval)
-            _replace(nval, env)
-        end
+        return CSTParser.valof(name)
+    end
+    return nothing
+end
+
+function _replace(key::CSTParser.EXPR, env::EmojiEnv)
+    name = _get_string(key)
+    if !isnothing(name)
+        _replace(name, env)
     end
 end
 
@@ -83,13 +88,13 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
     cu = codeunits(str)
 
     offset = 1
-    stack = Vector{Tuple{CSTParser.EXPR, Bool, Set{String}}}()
-    push!(stack, (cst, true, exports))
+    stack = Vector{Tuple{CSTParser.EXPR, Set{String}, Set{String}}}()
+    push!(stack, (cst, Set{String}(), exports))
 
     while length(stack) > 0
-        cst, replace, exports = pop!(stack)
+        cst, replacemask, exports = pop!(stack)
         if isnothing(cst.args)
-            if replace && CSTParser.isidentifier(cst) && haskey(env.replacements, CSTParser.valof(cst))
+            if CSTParser.isidentifier(cst) && haskey(env.replacements, CSTParser.valof(cst)) && !(CSTParser.valof(cst) in replacemask)
                 cem = env.replacements[CSTParser.valof(cst)]
                 write(out, cem)
                 if cst.fullspan > cst.span
@@ -105,17 +110,31 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
             offset += cst.fullspan
         else
             if CSTParser.defines_function(cst)
-                if !(CSTParser.valof(CSTParser.get_name(cst)) in exports)
-                    for sigpart in CSTParser.get_sig(cst)
+                exported = CSTParser.valof(CSTParser.get_name(cst)) in exports
+                for (i, sigpart) in enumerate(CSTParser.get_sig(cst))
+                    if exported && i == 1
+                        continue
+                    end
+                    if CSTParser.isparameters(sigpart)
+                        if exported
+                            replacemask = copy(replacemask)
+                            for param in sigpart
+                                name = _get_string(CSTParser.get_arg_name(param))
+                                !isnothing(name) && push!(replacemask, name)
+                            end
+                        else
+                            for param in sigpart
+                                _replace(CSTParser.get_arg_name(param), env)
+                            end
+                        end
+                    else
                         _replace(CSTParser.get_arg_name(sigpart), env)
                     end
                 end
             elseif CSTParser.is_getfield(cst) && CSTParser.valof(CSTParser.unquotenode(cst)) in env.modules
-                    replace = false
-            elseif CSTParser.isparameters(cst)
-                for param in cst
-                    _replace(CSTParser.get_arg_name(param), env)
-                end
+                replacemask = copy(replacemask)
+                push!(replacemask, _get_string(CSTParser.get_name(cst)))
+                push!(replacemask, _get_string(CSTParser.get_sig(cst)))
             elseif CSTParser.isassignment(cst)
                 _replace(cst[1], env)
             elseif CSTParser.defines_datatype(cst) && !(CSTParser.valof(CSTParser.get_name(cst)) in exports)
@@ -153,7 +172,7 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
             end
 
             for i in length(cst):-1:1
-                push!(stack, (cst[i], replace, exports))
+                push!(stack, (cst[i], replacemask, exports))
             end
         end
     end

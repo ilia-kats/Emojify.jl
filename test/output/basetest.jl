@@ -6,7 +6,10 @@ export testfun3
 🕼 = 1
 👴() = nothing
 🗍(🕼, 🖅; 📄, 🗫) = 🖅
-testfun3(🕼, 🖅; 📄, 🗫) = 🖅
+function testfun3(🕼, 🖅; z, a)
+    🐺 = z + a
+    return 🐺
+end
 
 include("test.jl")
 
@@ -15,12 +18,12 @@ struct TestStruct
     field2::Float
 end
 
-struct 🗜
-    💊::TestStruct
-    🔷::String
+struct 💊
+    🔷::TestStruct
+    🙂::String
 end
 
-Base.getproperty(🕼::TestStruct, 📱::Symbol) = getfield(🕼, 📱)
+Base.getproperty(🕼::TestStruct, 🔆::Symbol) = getfield(🕼, 🔆)
 Test.record(🕼) = 🕼
 
 export TestStruct

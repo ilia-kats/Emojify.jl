@@ -14,14 +14,21 @@ mutable struct EmojiEnv
     basedir::Union{String, Nothing}
     outdir::Union{String, Nothing}
 end
-function EmojiEnv(emojis::Vector{Char}, emojiidx::Vector{<:Integer}, replacements::Dict{String, String}, basedir::Union{String, Nothing}, outdir::Union{String, Nothing})
+function EmojiEnv(
+    emojis::Vector{Char},
+    emojiidx::Vector{<:Integer},
+    replacements::Dict{String, String},
+    basedir::Union{String, Nothing},
+    outdir::Union{String, Nothing},
+)
     defaultmods = Set(["Base", "Core"])
     EmojiEnv(emojis, emojiidx, defaultmods, replacements, basedir, outdir)
 end
 
-EmojiEnv(basedir::String, outdir::String, emojis::Vector{Char}=emoji) = EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), abspath(basedir), abspath(outdir))
-EmojiEnv(emojis::Vector{Char}=emoji) = EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), nothing, nothing)
-
+EmojiEnv(basedir::String, outdir::String, emojis::Vector{Char}=emoji) =
+    EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), abspath(basedir), abspath(outdir))
+EmojiEnv(emojis::Vector{Char}=emoji) =
+    EmojiEnv(shuffle(emojis), [1], Dict{String, String}(), nothing, nothing)
 
 function _replace(key::AbstractString, env::EmojiEnv)
     if !haskey(env.replacements, key)
@@ -57,7 +64,10 @@ function _replace(key::CSTParser.EXPR, env::EmojiEnv)
     end
 end
 
-_isinclude(cst::CSTParser.EXPR) = CSTParser.iscall(cst) && CSTParser.valof(CSTParser.get_name(cst)) == "include" && CSTParser.isstringliteral(cst.args[2])
+_isinclude(cst::CSTParser.EXPR) =
+    CSTParser.iscall(cst) &&
+    CSTParser.valof(CSTParser.get_name(cst)) == "include" &&
+    CSTParser.isstringliteral(cst.args[2])
 
 function _get_include(cst::CSTParser.EXPR, include_path::Union{AbstractString, Nothing}=nothing)
     includefile = CSTParser.valof(cst.args[2])
@@ -68,7 +78,10 @@ function _get_include(cst::CSTParser.EXPR, include_path::Union{AbstractString, N
     return includefile, absp
 end
 
-function _scan_module_for_exports(cst::CSTParser.EXPR, include_path::Union{AbstractString, Nothing}=nothing)
+function _scan_module_for_exports(
+    cst::CSTParser.EXPR,
+    include_path::Union{AbstractString, Nothing}=nothing,
+)
     exports = Set{String}()
     for p in cst
         if CSTParser.headof(p) === :export
@@ -77,13 +90,26 @@ function _scan_module_for_exports(cst::CSTParser.EXPR, include_path::Union{Abstr
             end
         elseif !isnothing(include_path) && _isinclude(p)
             includefile = _get_include(p, include_path)[1]
-            union!(exports, _scan_module_for_exports(CSTParser.parse(read(includefile, String), true), dirname(includefile)))
+            union!(
+                exports,
+                _scan_module_for_exports(
+                    CSTParser.parse(read(includefile, String), true),
+                    dirname(includefile),
+                ),
+            )
         end
     end
     return exports
 end
 
-function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_path::Union{AbstractString, Nothing}=nothing, errorstring="input", exports::Set{String}=Set{String}())
+function _emojify_string(
+    str::AbstractString,
+    out::IO,
+    env::EmojiEnv,
+    include_path::Union{AbstractString, Nothing}=nothing,
+    errorstring="input",
+    exports::Set{String}=Set{String}(),
+)
     cst = CSTParser.parse(str, true)
     cu = codeunits(str)
 
@@ -94,7 +120,9 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
     while length(stack) > 0
         cst, replacemask, exports = pop!(stack)
         if isnothing(cst.args)
-            if CSTParser.isidentifier(cst) && haskey(env.replacements, CSTParser.valof(cst)) && !(CSTParser.valof(cst) in replacemask)
+            if CSTParser.isidentifier(cst) &&
+               haskey(env.replacements, CSTParser.valof(cst)) &&
+               !(CSTParser.valof(cst) in replacemask)
                 cem = env.replacements[CSTParser.valof(cst)]
                 write(out, cem)
                 if cst.fullspan > cst.span
@@ -131,13 +159,15 @@ function _emojify_string(str::AbstractString, out::IO, env::EmojiEnv, include_pa
                         _replace(CSTParser.get_arg_name(sigpart), env)
                     end
                 end
-            elseif CSTParser.is_getfield(cst) && CSTParser.valof(CSTParser.unquotenode(cst)) in env.modules
+            elseif CSTParser.is_getfield(cst) &&
+                   CSTParser.valof(CSTParser.unquotenode(cst)) in env.modules
                 replacemask = copy(replacemask)
                 push!(replacemask, _get_string(CSTParser.get_name(cst)))
                 push!(replacemask, _get_string(CSTParser.get_sig(cst)))
             elseif CSTParser.isassignment(cst)
                 _replace(cst[1], env)
-            elseif CSTParser.defines_datatype(cst) && !(CSTParser.valof(CSTParser.get_name(cst)) in exports)
+            elseif CSTParser.defines_datatype(cst) &&
+                   !(CSTParser.valof(CSTParser.get_name(cst)) in exports)
                 _replace(cst, env)
                 for c in cst
                     if CSTParser.headof(c) === :block # body of type definition
@@ -183,7 +213,7 @@ function _emojify_file(file::AbstractString, env::EmojiEnv, exports::Set{String}
 
     outdir = env.outdir
     include_path, filename = splitdir(file)
-    subdir = include_path[length(env.basedir) + 1:end]
+    subdir = include_path[(length(env.basedir) + 1):end]
     env.outdir = mkpath(joinpath(outdir, subdir))
     outfile = joinpath(env.outdir, filename)
     open(outfile, "w") do out

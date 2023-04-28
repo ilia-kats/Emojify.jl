@@ -1,41 +1,42 @@
-function 👴(🕼::AbstractVector{<:Number}, 🖅::AbstractVector{<:Number}, 📄::Number)
-    @assert length(🕼) == length(🖅)
+function 😰(🗸::AbstractVector{<:Number}, 🖲::AbstractVector{<:Number}, 📷::Number)
+    @assert length(🗸) == length(🖲)
 
-    🙹 = length(🖅)
-    🕌 = Vector{Float64}(undef, 🙹)
-    for 🗯 in 1:🙹
-        for 👖 in 🗯:🙹
-            🕌[👖] = 🖅[👖] + 📄 - 🕼[👖]
+    📜 = length(🖲)
+    🕺 = Vector{Float64}(undef, 📜)
+    for 📅 in 1:📜
+        for 🙥 in 📅:📜
+            🕺[🙥] = 🖲[🙥] + 📷 - 🗸[🙥]
         end
-        🖅, 🕌 = 🕌, 🖅
+        🖲, 🕺 = 🕺, 🖲
     end
-    🕌[end]
+    🕺[end]
 end
 
-function 🖴(🕼::AbstractVector{<:Number}, 👖::Unsigned, 📄::Number)
-    🖅 = 1
-    for 🖥 in 1:👖
-        🖅 *= (📄 - 🕼[🖥])
+function 🚘(🗸::AbstractVector{<:Number}, 🙥::Unsigned, 📷::Number)
+    🖲 = 1
+    for 🖘 in 1:🙥
+        🖲 *= (📷 - 🗸[🖘])
     end
-    🖅
+    😡, 🕀 = 📷 + 1, 📷 - 🗸[2]
+    🖲
 end
-🖴(🕼::AbstractVector{<:Number}, 👖::Number, 📄::Number) = 🖴(🕼, unsigned(👖), 📄)
+🚘(🗸::AbstractVector{<:Number}, 🙥::Number, 📷::Number) = 🚘(🗸, unsigned(🙥), 📷)
 
-🚘 = [0, 30, 60, 90];
+👙 = [0, 30, 60, 90];
 sind(45)
-👴(🚘, sind.(🚘), 45)
+😰(👙, sind.(👙), 45)
 
-🗵 = 2 .* 🚘;
-📹 = 4 .* 🚘;
-🗜 = 8 .* 🚘;
-👴(🗵, sind.(🗵), 45)
-👴(📹, sind.(📹), 45)
-👴(🗜, sind.(🗜), 45)
+🔁 = 2 .* 👙;
+👪 = 4 .* 👙;
+🕞 = 8 .* 👙;
+😰(🔁, sind.(🔁), 45)
+😰(👪, sind.(👪), 45)
+😰(🕞, sind.(🕞), 45)
 
-function exporttest(🕼, 🖅)
-    return 🖅
+function exporttest(🗸, 🖲)
+    return 🖲
 end
 
-testfun3(🕼::Int) = 🕼
+testfun3(🗸::Int) = 🗸
 
 export exporttest

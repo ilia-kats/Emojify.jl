@@ -3,12 +3,12 @@ using Test
 
 export testfun3
 
-ⅉ = 1
-ℭ() = nothing
-ℜ(ⅉ, ℳ; ℘, ℮) = ℳ
-function testfun3(ⅉ, ℳ; z, a)
-    ℴ = z + a
-    return ℴ
+℗ = 1
+ℼ() = nothing
+ℴ(℗, ℧; ℯ, ℋ) = ℧
+function testfun3(℗, ℧; z, a)
+    ℏ = z + a
+    return ℏ
 end
 
 include("test.jl")
@@ -18,13 +18,13 @@ struct TestStruct
     field2::Float
 end
 
-struct ℣
-    ℔::TestStruct
-    ℩::String
+struct ℜ
+    ™::TestStruct
+    ℘::String
 end
 
-Base.getproperty(ⅉ::TestStruct, ℐ::Symbol) = getfield(ⅉ, ℐ)
-Test.record(ⅉ) = ⅉ
+Base.getproperty(℗::TestStruct, ℒ::Symbol) = getfield(℗, ℒ)
+Test.record(℗) = ℗
 
 export TestStruct
 

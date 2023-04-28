@@ -173,7 +173,13 @@ function _emojify_string(
                 push!(replacemask, _get_string(CSTParser.get_name(cst)))
                 push!(replacemask, _get_string(CSTParser.get_sig(cst)))
             elseif CSTParser.isassignment(cst)
-                _replace(cst[1], env)
+                if CSTParser.istuple(cst[1])
+                    for c in Iterators.filter(CSTParser.isidentifier, cst[1])
+                        _replace(c, env)
+                    end
+                else
+                    _replace(cst[1], env)
+                end
             elseif CSTParser.defines_datatype(cst) &&
                    !(CSTParser.valof(CSTParser.get_name(cst)) in exports)
                 _replace(cst, env)
@@ -233,7 +239,7 @@ end
 
 function emojify(str::AbstractString, emojis::Union{Vector{Char}, Nothing}=nothing)
     out = IOBuffer(sizehint=sizeof(str))
-    _emojify_string(str, out, EmojiEnv(emojs))
+    _emojify_string(str, out, EmojiEnv(emojis))
     return String(take!(out))
 end
 

@@ -1,41 +1,42 @@
-function ℭ(ⅉ::AbstractVector{<:Number}, ℳ::AbstractVector{<:Number}, ℘::Number)
-    @assert length(ⅉ) == length(ℳ)
+function ℼ(℗::AbstractVector{<:Number}, ℧::AbstractVector{<:Number}, ℯ::Number)
+    @assert length(℗) == length(℧)
 
-    ℬ = length(ℳ)
-    ⅆ = Vector{Float64}(undef, ℬ)
-    for ℿ in 1:ℬ
-        for K in ℿ:ℬ
-            ⅆ[K] = ℳ[K] + ℘ - ⅉ[K]
+    ℣ = length(℧)
+    ℙ = Vector{Float64}(undef, ℣)
+    for ℶ in 1:℣
+        for ⅇ in ℶ:℣
+            ℙ[ⅇ] = ℧[ⅇ] + ℯ - ℗[ⅇ]
         end
-        ℳ, ⅆ = ⅆ, ℳ
+        ℧, ℙ = ℙ, ℧
     end
-    ⅆ[end]
+    ℙ[end]
 end
 
-function ℯ(ⅉ::AbstractVector{<:Number}, K::Unsigned, ℘::Number)
-    ℳ = 1
-    for ℍ in 1:K
-        ℳ *= (℘ - ⅉ[ℍ])
+function ℾ(℗::AbstractVector{<:Number}, ⅇ::Unsigned, ℯ::Number)
+    ℧ = 1
+    for ℭ in 1:ⅇ
+        ℧ *= (ℯ - ℗[ℭ])
     end
-    ℳ
+    ℋ, ℏ = ℯ + 1, ℯ - ℗[2]
+    ℧
 end
-ℯ(ⅉ::AbstractVector{<:Number}, K::Number, ℘::Number) = ℯ(ⅉ, unsigned(K), ℘)
+ℾ(℗::AbstractVector{<:Number}, ⅇ::Number, ℯ::Number) = ℾ(℗, unsigned(ⅇ), ℯ)
 
-ℚ = [0, 30, 60, 90];
+ⅈ = [0, 30, 60, 90];
 sind(45)
-ℭ(ℚ, sind.(ℚ), 45)
+ℼ(ⅈ, sind.(ⅈ), 45)
 
-ℹ = 2 .* ℚ;
-⅁ = 4 .* ℚ;
-ℶ = 8 .* ℚ;
-ℭ(ℹ, sind.(ℹ), 45)
-ℭ(⅁, sind.(⅁), 45)
-ℭ(ℶ, sind.(ℶ), 45)
+ℱ = 2 .* ⅈ;
+ℐ = 4 .* ⅈ;
+ℨ = 8 .* ⅈ;
+ℼ(ℱ, sind.(ℱ), 45)
+ℼ(ℐ, sind.(ℐ), 45)
+ℼ(ℨ, sind.(ℨ), 45)
 
-function exporttest(ⅉ, ℳ)
-    return ℳ
+function exporttest(℗, ℧)
+    return ℧
 end
 
-testfun3(ⅉ::Int) = ⅉ
+testfun3(℗::Int) = ℗
 
 export exporttest

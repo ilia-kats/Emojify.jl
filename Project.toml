@@ -1,7 +1,7 @@
 name = "Emojify"
 uuid = "81924f50-bd56-49d2-a16a-e6ee54760b61"
 authors = ["Ilia Kats <ilia-kats@gmx.net>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 CSTParser = "00ebfdb7-1f24-5e51-bd34-a7502290713f"

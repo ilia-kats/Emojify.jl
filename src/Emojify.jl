@@ -127,7 +127,7 @@ function _emojify_string(
 
     while length(stack) > 0
         cst, replacemask, exports = pop!(stack)
-        if isnothing(cst.args)
+        if isnothing(cst.args) || isempty(cst.args)
             if CSTParser.isidentifier(cst) &&
                haskey(env.replacements, CSTParser.valof(cst)) &&
                !(CSTParser.valof(cst) in replacemask)
@@ -174,7 +174,7 @@ function _emojify_string(
                 push!(replacemask, _get_string(CSTParser.get_sig(cst)))
             elseif CSTParser.isassignment(cst)
                 if CSTParser.istuple(cst[1])
-                    for c in Iterators.filter(CSTParser.isidentifier, cst[1])
+                    for c in cst[1]
                         _replace(c, env)
                     end
                 else

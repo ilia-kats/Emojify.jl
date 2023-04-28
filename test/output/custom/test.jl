@@ -17,7 +17,7 @@ function ℾ(℗::AbstractVector{<:Number}, ⅇ::Unsigned, ℯ::Number)
     for ℭ in 1:ⅇ
         ℧ *= (ℯ - ℗[ℭ])
     end
-    ℋ, ℏ = ℯ + 1, ℯ - ℗[2]
+    ℋ, ℏ = somefunction(℗, [ⅇ; ℯ])
     ℧
 end
 ℾ(℗::AbstractVector{<:Number}, ⅇ::Number, ℯ::Number) = ℾ(℗, unsigned(ⅇ), ℯ)

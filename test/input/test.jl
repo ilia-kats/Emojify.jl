@@ -17,7 +17,7 @@ function ω(x::AbstractVector{<:Number}, i::Unsigned, z::Number)
     for j in 1:i
         y *= (z - x[j])
     end
-    a, b = z + 1, z - x[2]
+    a, b = somefunction(x, [i; z])
     y
 end
 ω(x::AbstractVector{<:Number}, i::Number, z::Number) = ω(x, unsigned(i), z)

@@ -17,7 +17,7 @@ function 🚘(🗸::AbstractVector{<:Number}, 🙥::Unsigned, 📷::Number)
     for 🖘 in 1:🙥
         🖲 *= (📷 - 🗸[🖘])
     end
-    😡, 🕀 = 📷 + 1, 📷 - 🗸[2]
+    😡, 🕀 = somefunction(🗸, [🙥; 📷])
     🖲
 end
 🚘(🗸::AbstractVector{<:Number}, 🙥::Number, 📷::Number) = 🚘(🗸, unsigned(🙥), 📷)
